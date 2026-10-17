@@ -1,5 +1,7 @@
 # static-site-aws
 
+[![CI](https://github.com/ge0ffr3y/static-site-aws/actions/workflows/ci.yml/badge.svg)](https://github.com/ge0ffr3y/static-site-aws/actions/workflows/ci.yml)
+
 Write Markdown, get a fast static site served from a **private S3 bucket behind CloudFront**. The Terraform that creates the hosting is included, along with a deploy script and a GitHub Actions workflow that deploys without storing any AWS keys.
 
 It is extracted and generalized from the pipeline that runs my own site, [geoffleediker.com](https://geoffleediker.com).
