@@ -1,0 +1,51 @@
+name: Deploy
+
+# Deploys the site to AWS using GitHub OIDC, so no AWS keys are stored in the repository.
+# It stays inert until you set the repository variables below.
+#
+#   AWS_DEPLOY_ROLE_ARN             terraform output github_deploy_role_arn
+#   S3_BUCKET                       terraform output bucket_name
+#   CLOUDFRONT_DISTRIBUTION_ID      terraform output distribution_id
+#   AWS_REGION                      optional, defaults to us-west-2
+#   SITE_URL                        optional, overrides siteUrl in site.config.json
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - content/**
+      - site/**
+      - src/**
+      - site.config.json
+      - scripts/deploy.sh
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: ${{ vars.AWS_DEPLOY_ROLE_ARN != '' }}
+    runs-on: ubuntu-latest
+    env:
+      S3_BUCKET: ${{ vars.S3_BUCKET }}
+      CLOUDFRONT_DISTRIBUTION_ID: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}
+      SITE_URL: ${{ vars.SITE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION || 'us-west-2' }}
+      - run: scripts/deploy.sh
