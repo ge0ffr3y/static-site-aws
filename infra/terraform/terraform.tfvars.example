@@ -1,0 +1,14 @@
+# Copy to terraform.tfvars (which is git-ignored) and fill in your own values.
+
+bucket_name = "my-unique-site-bucket-name"
+aws_region  = "us-west-2"
+
+# Optional: serve from your own domain. Needs a Route 53 hosted zone you control.
+# domain_name    = "www.example.com"
+# hosted_zone_id = "Z0123456789ABCDEFGHIJ"
+
+# Optional: let GitHub Actions deploy through OIDC (no long-lived keys).
+# github_repo = "your-github-user/your-repo-name"
+
+# Optional: an IAM user for deploying from your laptop.
+# create_deploy_user = true
