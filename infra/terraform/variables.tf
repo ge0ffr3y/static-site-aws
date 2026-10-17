@@ -42,6 +42,17 @@ variable "github_repo" {
   description = "GitHub repository (owner/name) allowed to deploy through OIDC. Leave empty to skip creating the deploy role."
   type        = string
   default     = ""
+
+  validation {
+    condition     = var.github_repo == "" || can(regex("^[^/@]+/[^/@]+$", var.github_repo))
+    error_message = "github_repo must look like owner/name."
+  }
+}
+
+variable "github_subject_prefix" {
+  description = "Optional exact OIDC subject prefix to trust, for example repo:owner@123/name@456. Leave empty to accept both the name-based and ID-based forms. Get yours with: gh api repos/OWNER/NAME/actions/oidc/customization/sub"
+  type        = string
+  default     = ""
 }
 
 variable "github_branch" {

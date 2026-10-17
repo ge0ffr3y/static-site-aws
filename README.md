@@ -78,6 +78,8 @@ Set `github_repo = "owner/name"` in `terraform.tfvars` and apply. Terraform crea
 | `CLOUDFRONT_DISTRIBUTION_ID` | `terraform output distribution_id` |
 | `SITE_URL` | the address the site is served from |
 
+The role trusts tokens from your repository's `main` branch only. GitHub puts either `repo:owner/name` or, for newer repositories, `repo:owner@<id>/name@<id>` in the token, and the trust policy accepts both. To pin the exact value, set `github_subject_prefix` to the `sub_claim_prefix` from `gh api repos/OWNER/NAME/actions/oidc/customization/sub`.
+
 The deploy workflow does nothing until `AWS_DEPLOY_ROLE_ARN` is set. An AWS account can have only one GitHub OIDC provider; if yours already exists, set `create_github_oidc_provider = false` and pass `github_oidc_provider_arn`.
 
 ## Design decisions
@@ -105,6 +107,14 @@ npm test
 They cover slugs, first-sentence excerpts, date handling, frontmatter validation, draft and duplicate-slug handling, canonical URLs and the sitemap, HTML escaping, and the CloudFront Function. I also checked the tests by deliberately breaking the code and confirming they fail, which turned up one regex guard that did nothing and is now gone.
 
 CI also runs `terraform fmt -check` and `terraform validate`, and `shellcheck` on the deploy script.
+
+I also applied the Terraform to a real AWS account, deployed through it, and destroyed it. That checked:
+
+- The site is served with clean URLs, the real 404 page, and the security headers, and the bucket answers 403 when requested directly.
+- The deploy identity could sync and invalidate its own stack, and was denied everything else, including another bucket and distribution in the same account.
+- The GitHub Actions workflow deployed through OIDC with no stored keys, and the same workflow run from another branch was refused.
+
+The OIDC test also found a bug: the first version of the trust policy only matched `repo:owner/name`, which newer repositories don't send. That is fixed above.
 
 ## Cost
 

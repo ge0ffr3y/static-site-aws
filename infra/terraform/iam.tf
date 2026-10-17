@@ -84,11 +84,19 @@ data "aws_iam_policy_document" "github_trust" {
       values   = ["sts.amazonaws.com"]
     }
 
-    # Only this repository, only this branch.
+    # Only this repository, only this branch. GitHub puts either "repo:owner/name" or, for
+    # repositories created with immutable subjects, "repo:owner@<id>/name@<id>" in the token.
+    # By default both forms are accepted, with the numeric IDs wildcarded. Set
+    # github_subject_prefix to pin the exact value.
     condition {
-      test     = "StringEquals"
+      test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.github_repo}:ref:refs/heads/${var.github_branch}"]
+      values = var.github_subject_prefix != "" ? [
+        "${var.github_subject_prefix}:ref:refs/heads/${var.github_branch}",
+        ] : [
+        "repo:${var.github_repo}:ref:refs/heads/${var.github_branch}",
+        "repo:${split("/", var.github_repo)[0]}@*/${split("/", var.github_repo)[1]}@*:ref:refs/heads/${var.github_branch}",
+      ]
     }
   }
 }
