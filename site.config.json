@@ -1,0 +1,7 @@
+{
+  "siteUrl": "https://example.com",
+  "title": "Example Site",
+  "description": "A static site built from Markdown and served from S3 through CloudFront.",
+  "author": "Your Name",
+  "homePosts": 3
+}
